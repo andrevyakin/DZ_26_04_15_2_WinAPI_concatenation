@@ -4,16 +4,17 @@
 
 #define ID_ComboBox 1001
 #define ID_Button 1002
-#define ID_Edit_Get 1003
-#define ID_Edit_Res 1004
+#define ID_Edit 1003
+#define ID_List 1004
 
 static TCHAR WindowsClass[] = L"win32app";
 static TCHAR Title[] = L"MyApp";
 HINSTANCE hinst;
 RECT desktop, cr;
-LRESULT cur_sel, count;
+LRESULT cur_sel_combo, cur_sel_list;
+wchar_t name[50], prof[30], res[100];
 
-HWND combo, button, editGet, editRes;
+HWND combo, button, edit, list;
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -88,11 +89,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_COMMAND:
 
+		if (LOWORD(wParam) == ID_ComboBox && HIWORD(wParam) == CBN_SELENDOK) {
+			cur_sel_combo = SendMessage(combo, CB_GETCURSEL, 0, 0);
+			SendMessage(combo, CB_GETLBTEXT, cur_sel_combo, (LPARAM)prof);
+		}
 		
 
 	case BN_CLICKED:
 
-		
+		if (LOWORD(wParam) == ID_Button)
+		{
+			SendMessage(edit, WM_GETTEXT, sizeof(name), (LPARAM)name);
+			wcscat_s(res, name);
+			wcscat_s(res, L" - ");
+			wcscat_s(res, prof);
+			wcscat_s(res, L"\n\0");
+			SendMessage(list, LB_ADDSTRING, 0, (LPARAM)res);
+			//SendMessage(combo, EB_SETCURSEL, ++cur_sel_edit, 0);
+			res[0] = '\0';
+		}
 
 		break;
 
@@ -104,7 +119,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			WS_EX_CLIENTEDGE,
 			L"combobox",
 			L"",
-			WS_CHILD | WS_VISIBLE | CBS_DROPDOWN,
+			WS_CHILD | WS_VISIBLE | CBS_DROPDOWN | ES_READONLY,
 			cr.right / 8,
 			cr.bottom / 2,
 			cr.right / 4,
@@ -143,7 +158,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			(HMENU)ID_Button,
 			hinst, NULL);
 
-		editGet = CreateWindowEx(
+		edit = CreateWindowEx(
 			WS_EX_CLIENTEDGE,
 			L"edit",
 			L"¬ведите фамилию",
@@ -153,21 +168,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			cr.right / 4,
 			25,
 			hWnd,
-			(HMENU)ID_Edit_Get,
+			(HMENU)ID_Edit,
 			hinst,
 			NULL);
 
-		editRes = CreateWindowEx(
+		list = CreateWindowEx(
 			WS_EX_CLIENTEDGE,
-			L"edit",
+			L"listbox",
 			L"",
-			WS_CHILD | WS_VISIBLE,
+			WS_CHILD | WS_VISIBLE | ES_READONLY | WS_VSCROLL,
 			cr.right / 8 * 3.5,
 			cr.bottom / 8,
 			cr.right / 2,
 			cr.bottom / 1.5,
 			hWnd,
-			(HMENU)ID_Edit_Res,
+			(HMENU)ID_List,
 			hinst,
 			NULL);
 
